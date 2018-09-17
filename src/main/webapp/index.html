@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Rotas</title>
+<link href="ol.css" rel="stylesheet"/>
+<style type="text/css">
+	#map {
+	  height: 100%;
+	}
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	  padding: 0;
+	}
+
+</style>
+
+</head>
+<body>
+
+<div id="map"></div>
+
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="ol.js"></script>
+<script type="text/javascript">
+
+// function initMap(){
+// 		var map = new google.maps.Map(document.getElementById('map'), {
+// 		  center: {lat: -19.774390, lng: -43.983561},
+// 		  zoom: 18
+// 		});
+// 		$.ajax({
+// 			url : 'http://localhost:8080/geoserver/Rotas/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=Rotas:mytable&maxFeatures=50&outputFormat=application%2Fjson',
+// 			method : 'GET'
+// 		}).done(function(data){
+// 			console.log(data);
+// 		});
+// }
+
+// var raster = new ol.source.OSM();
+
+// var map = new ol.Map({
+//     target: 'map',
+//     layers: [
+//       new ol.layer.Tile({
+//         source: new ol.source.OSM()
+//       })
+//     ],
+//     view: new ol.View({
+//       center: ol.proj.fromLonLat([37.41, 8.82]),
+//       zoom: 4
+//     })
+//   });
+  
+//  import Map from 'ol/Map.js';
+//  import View from 'ol/View.js';
+//  import Draw from 'ol/interaction/Draw.js';
+//  import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
+//  import {OSM, Vector as VectorSource} from 'ol/source.js';
+      
+	var TileLayer = ol.layer.Tile;
+	var OSM = ol.source.OSM;
+	var VectorSource = ol.source.Vector;
+	var VectorLayer = ol.layer.Vector;
+	var View = ol.View;
+	var Map = ol.Map;
+	var Draw = ol.interaction.Draw;
+
+      var raster = new TileLayer({
+        source: new OSM()
+      });
+
+      var source = new VectorSource({wrapX: false});
+
+      var vector = new VectorLayer({
+        source: source
+      });
+	
+      var centerProjection = {lat: -19.774390, lng: -43.983561};
+      
+      var map = new Map({
+        layers: [raster, vector],
+        target: 'map',
+        view: new View({
+          center: ol.proj.fromLonLat([centerProjection.lng, centerProjection.lat]),
+          zoom: 18
+        })
+      });
+
+      var typeSelect = 'LineString';
+
+      var draw; // global so we can remove it later
+      function addInteraction() {
+        var value = typeSelect;
+        if (value !== 'None') {
+          draw = new Draw({
+            source: source,
+            type: typeSelect
+          });
+          map.addInteraction(draw);
+        }
+      }
+
+
+      /**
+       * Handle change event.
+       */
+      typeSelect.onchange = function() {
+        map.removeInteraction(draw);
+        addInteraction();
+      };
+
+      addInteraction();  
+</script>
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key=[api-key]&callback=initMap" async defer></script> -->
+</body>
+</html>

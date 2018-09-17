@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Format WKT</title>
+<link href="ol.css" rel="stylesheet"/>
+<style type="text/css">
+	#map {
+	  height: 100%;
+	}
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	  padding: 0;
+	}
+</style>
+
+</head>
+<body>
+
+<div id="map"></div>
+
+
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="ol.js"></script>
+<script type="text/javascript" src="styles-geometry.js"></script>
+<script type="text/javascript">
+
+
+var Map = ol.Map;
+var View = ol.View;
+var WKT = ol.format.WKT;
+var TileLayer = ol.layer.Tile;
+var VectorLayer = ol.layer.Vector;
+var OSM = ol.source.OSM;
+var VectorSource = ol.source.Vector;
+var Circle = ol.geom.Circle;
+var Feature = ol.Feature;
+var defaultControls = ol.control.defaults;
+var GeoJSON = ol.format.GeoJSON;
+
+$(document).ready(function(){
+		$.ajax({
+			url : 'http://localhost:8080/geoserver/Rotas/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=Rotas:mytable&maxFeatures=50&outputFormat=application%2Fjson',
+			async: false,
+			method : 'GET'
+		}).done(function(data){
+		console.log(data);
+		
+		for(var f of data.features){
+			for(var c in f.geometry.coordinates){
+				f.geometry.coordinates[c] = ol.proj.fromLonLat(f.geometry.coordinates[c]); 
+			}
+		}
+		 var styleFunction = function(feature) {
+		   return styles[feature.getGeometry().getType()];
+		 };
+		
+		
+		var vectorSource = new VectorSource({
+		  features: (new GeoJSON()).readFeatures(data)
+			  
+		});
+		
+		var vectorLayer = new VectorLayer({
+		  source: vectorSource,
+		  style: styleFunction
+		});
+	
+		var map = new Map({
+		  layers: [
+		    new TileLayer({
+		      source: new OSM()
+		    }),
+		    vectorLayer
+		  ],
+		  target: 'map',
+		  controls: defaultControls({
+		    attributionOptions: {
+		      collapsible: false
+		    }
+		  }),
+		  view: new View({
+		    center: ol.proj.fromLonLat([-43.93710226,-19.93125458]),
+		    zoom: 17
+		  })
+		});
+	
+	}).fail(function(){
+	  console.log('Falhou!!!');
+	});
+});
+</script>
+</body>
+</html>
