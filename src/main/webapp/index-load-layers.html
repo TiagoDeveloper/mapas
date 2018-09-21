@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Format WKT</title>
+<link href="ol.css" rel="stylesheet"/>
+<style type="text/css">
+	#map {
+	  height: 100%;
+	}
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	  padding: 0;
+	}
+</style>
+
+</head>
+<body>
+
+<div id="map"></div>
+
+
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="ol.js"></script>
+<script type="text/javascript" src="styles-geometry.js"></script>
+<script type="text/javascript">
+
+
+var Map = ol.Map;
+var View = ol.View;
+var WKT = ol.format.WKT;
+var TileLayer = ol.layer.Tile;
+var VectorLayer = ol.layer.Vector;
+var OSM = ol.source.OSM;
+var VectorSource = ol.source.Vector;
+var Circle = ol.geom.Circle;
+var Feature = ol.Feature;
+var defaultControls = ol.control.defaults;
+var GeoJSON = ol.format.GeoJSON;
+
+// var mercator = new ol.proj.Projection("EPSG:3857");
+// var wgs = new ol.proj.Projection("EPSG:4326");
+
+
+//   var source = new VectorSource({wrapX: false});
+
+//   var vector = new VectorLayer({
+//     source: source
+//   });
+  
+// var layers = [  
+// new TileLayer({
+//     source: new OSM()
+// }),
+// new ol.layer.Image({
+// 	extent: [43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948],
+//  	source: new ol.source.ImageWMS({
+// 		url : 'http://localhost:8080/geoserver/Rotas/wms',
+// 		params: {'LAYERS': 'Rotas:mytable', 'TILED': true,REQUEST: "GetMap",FORMAT:"image/png",opacity: '66'},
+// 		serverType: 'geoserver',
+// 		ratio: 1
+// 	 })
+// }) 
+// ];
+  var layers = [
+        new TileLayer({
+          source: new OSM()
+        }),
+        new ol.layer.Image({
+          extent: ol.proj.fromLonLat([-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948]),
+          source: new ol.source.ImageWMS({
+            url: 'http://localhost:8080/geoserver/Rotas/wms',
+            params: {'LAYERS': 'Rotas:rota'},
+            ratio: 1,
+            serverType: 'geoserver'
+          })
+        })
+      ];
+      var map = new Map({
+        layers: layers,
+        target: 'map',
+        view: new View({
+          center:ol.proj.fromLonLat([-43.93710226,-19.93125458]),
+          zoom: 18
+        })
+      });
+//  var layers = [
+// 	 raster,
+// 	 myLayer
+//  ];
+ 
+//  var map = new Map({
+//         layers: layers,
+//         target: 'map',
+//         view: new View({
+//           center: ol.proj.fromLonLat([-43.93710226,-19.93125458]),
+//           zoom: 15
+//         })
+//   });
+ 
+// map.addLayer(myLayer); 
+// function tets(){
+// 	fetch('http://localhost:8080/geoserver/Rotas/wms?service=WMS&version=1.1.0&request=GetMap&layers=Rotas:mytable&styles=&bbox=-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948&width=694&height=768&srs=EPSG:4626&format=image%2Fpng')
+// 	.then(function(data){
+// 		console.log(data);
+// 	});
+// }
+// $(document).ready(function(){
+	
+// });
+</script>
+</body>
+</html>
