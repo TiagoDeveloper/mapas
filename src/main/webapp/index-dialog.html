@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Format WKT</title>
+
+<link href="ol.css" rel="stylesheet"/>
+<link href="css/bootstrap.min.css" rel="stylesheet"/>
+<link href="css/jquery-ui.min.css" rel="stylesheet"/>
+<style type="text/css">
+	#map {
+	  height: 100%;
+	}
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	  padding: 0;
+	}
+</style>
+
+</head>
+<body>
+
+<div id="map" ></div>
+
+
+<div id="dialog-confirm" title="Empty the recycle bin?">
+<!--   <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p> -->
+</div>
+
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="ol.js"></script>
+<script type="text/javascript" src="styles-geometry.js"></script>
+<script type="text/javascript">
+var dialog;
+
+$(document).ready(function(){
+	
+	dialog = $( "#dialog-confirm" ).dialog({
+	      autoOpen: false,
+		  resizable: false,
+	      height: "auto",
+	      width: 400,
+	      modal: true,
+	      buttons: {
+	        "Delete all items": function() {
+	          $( this ).dialog( "close" );
+	        },
+	        Cancel: function() {
+	          $( this ).dialog( "close" );
+	        }
+	      }
+	    });
+});
+
+$('#map').click(function(evt){
+	
+	var py = evt.offsetY;
+	var px = evt.offsetX;
+	$('#dialog-confirm').text(`pont y ${py} pont x ${px}`);
+	dialog.dialog( "open" );
+});
+
+
+var Map = ol.Map;
+var View = ol.View;
+var WKT = ol.format.WKT;
+var TileLayer = ol.layer.Tile;
+var VectorLayer = ol.layer.Vector;
+var OSM = ol.source.OSM;
+var VectorSource = ol.source.Vector;
+var Circle = ol.geom.Circle;
+var Feature = ol.Feature;
+var defaultControls = ol.control.defaults;
+var GeoJSON = ol.format.GeoJSON;
+
+  var layers = [
+      new TileLayer({
+        source: new OSM()
+      }),
+      new ol.layer.Image({
+        extent: ol.proj.fromLonLat([-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948]),
+        source: new ol.source.ImageWMS({
+          url: 'http://localhost:8080/geoserver/Rotas/wms',
+          params: {'LAYERS': 'Rotas:rota'},
+          ratio: 1,
+          serverType: 'geoserver'
+        })
+      })
+   ];
+  
+   var map = new Map({
+     layers: layers,
+     target: 'map',
+     view: new View({
+       center:ol.proj.fromLonLat([-43.93710226,-19.93125458]),
+       zoom: 18
+     })
+   });
+</script>
+</body>
+</html>
