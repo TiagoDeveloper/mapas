@@ -5,6 +5,7 @@
             <!-- Exclude RestEasy conflicts -->
             <module name="javax.validation.api" />
             <module name="org.hibernate.validator" />
+            <module name="org.jboss.logging" />
             <module name="org.jboss.resteasy.resteasy-jaxrs" />
             <module name="javaee.api" />
             <module name="javax.ws.rs.api"/>
