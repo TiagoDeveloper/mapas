@@ -32,7 +32,8 @@
 <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="ol.js"></script>
-<script type="text/javascript" src="styles-geometry.js"></script>
+<!-- <script type="text/javascript" src="styles-geometry.js"></script> -->
+<script type="text/javascript" src="js/jsts.min.js"></script>
 <script type="text/javascript">
 var dialog;
 
@@ -57,10 +58,10 @@ $(document).ready(function(){
 
 $('#map').click(function(evt){
 	
-	var py = evt.offsetY;
-	var px = evt.offsetX;
-	$('#dialog-confirm').text(`pont y ${py} pont x ${px}`);
-	dialog.dialog( "open" );
+// 	var py = evt.offsetY;
+// 	var px = evt.offsetX;
+// 	$('#dialog-confirm').text(`pont y ${py} pont x ${px}`);
+// 	dialog.dialog( "open" );
 });
 
 
@@ -75,20 +76,26 @@ var Circle = ol.geom.Circle;
 var Feature = ol.Feature;
 var defaultControls = ol.control.defaults;
 var GeoJSON = ol.format.GeoJSON;
+var Draw = ol.interaction.Draw;
 
+var source = new VectorSource({wrapX: false});
+var vector = new VectorLayer({
+    source: source
+  });
   var layers = [
       new TileLayer({
         source: new OSM()
       }),
       new ol.layer.Image({
-        extent: ol.proj.fromLonLat([-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948]),
+//         extent: ol.proj.fromLonLat([-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948]),
         source: new ol.source.ImageWMS({
           url: 'http://localhost:8080/geoserver/Rotas/wms',
           params: {'LAYERS': 'Rotas:rota'},
           ratio: 1,
           serverType: 'geoserver'
         })
-      })
+      }),
+      vector
    ];
   
    var map = new Map({
@@ -99,6 +106,54 @@ var GeoJSON = ol.format.GeoJSON;
        zoom: 18
      })
    });
+
+   
+   	var typeSelect = 'Point';
+	 function addInterection(){
+
+		 var draw = new Draw({
+			 source: source,
+			 type: typeSelect
+		 });
+		 draw.on('drawend', function(event) {
+			 event.feature.getGeometry().setCoordinates(-4891034.949565495, -2264913.0496716015)
+		});
+		 map.addInteraction(draw);
+	 }
+//http://dafyddprys.github.io/2016/02/10/select-features-in-openLayers-using-polygon-draw.html
+   map.on('singleclick',function(evt){
+	  
+	   var formData = new FormData();
+// 	   var point = new ol.geom.Point(ol.proj.fromLonLat(evt.coordinate));
+	   formData.append('geometry', evt.coordinate.toString());
+	   
+// 	   fetch('/mapas/app/geometry',{method:'POST',headers: {
+// 		   'Accept': 'application/json',
+// 		   'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+// 		   'body':JSON.stringify({geometry:evt.coordinate})
+// 	   })
+// 	   .then(function(evt){
+// 		   console.log("Result: " + evt);
+// 	   });
+// 	   $.ajax({
+// 		   url: '/mapas/app/geometry',
+// 		   method: 'POST',
+// 		   data: {geometry:evt.coordinate.toString()}
+// 	   }).done(function(result){
+// 		   console.log(result);
+// 	   });
+	   
+	   
+   });
+   
+   
+   
+   typeSelect.onchange = function() {
+       map.removeInteraction(draw);
+       addInteraction();
+     };
+
+   addInterection();
 </script>
 </body>
 </html>
