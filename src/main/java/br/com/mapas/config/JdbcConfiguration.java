@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories("br.com.mapas.repository")
+@EnableJpaRepositories("br.com.mapas.repositorys")
 public class JdbcConfiguration {
 
 	@Bean
@@ -56,7 +56,8 @@ public class JdbcConfiguration {
 	public Properties additionalProperties() {
 		Properties properties = new Properties();
 		properties.setProperty("hibernate.hbm2ddl.auto", "update");
-		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+		properties.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.postgis.PostgisDialect");
+//		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
 		return properties;
 	}

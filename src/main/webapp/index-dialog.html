@@ -108,25 +108,35 @@ var vector = new VectorLayer({
    });
 
    
-   	var typeSelect = 'Point';
-	 function addInterection(){
-
-		 var draw = new Draw({
-			 source: source,
-			 type: typeSelect
-		 });
-		 draw.on('drawend', function(event) {
-			 event.feature.getGeometry().setCoordinates(-4891034.949565495, -2264913.0496716015)
-		});
-		 map.addInteraction(draw);
-	 }
+//    	var typeSelect = 'Point';
+   	var typeSelect = 'LineString';
+	var draw = new Draw({
+	 source: source,
+	 type: typeSelect
+	});
+	function addInterection(){
+	 map.addInteraction(draw);
+	}
+	draw.on('drawend', function(event) {
+		
+		let format = new WKT();
+		
+		$.ajax({
+ 		   url: '/mapas/app/geometry',
+ 		   method: 'POST',
+ 		   data: {geometry: format.writeGeometry(event.feature.getGeometry())}
+ 	   }).done(function(result){
+ 		   console.log(result);
+ 	   });
+		//event.feature.getGeometry().setCoordinates(-4891034.949565495, -2264913.0496716015)
+	});
 //http://dafyddprys.github.io/2016/02/10/select-features-in-openLayers-using-polygon-draw.html
    map.on('singleclick',function(evt){
-	  
-	   var formData = new FormData();
+	console.log(evt);
+// 	   var formData = new FormData();
 // 	   var point = new ol.geom.Point(ol.proj.fromLonLat(evt.coordinate));
-	   formData.append('geometry', evt.coordinate.toString());
-	   
+// 	   formData.append('geometry', evt.coordinate.toString());
+//	   
 // 	   fetch('/mapas/app/geometry',{method:'POST',headers: {
 // 		   'Accept': 'application/json',
 // 		   'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
@@ -142,8 +152,8 @@ var vector = new VectorLayer({
 // 	   }).done(function(result){
 // 		   console.log(result);
 // 	   });
-	   
-	   
+//	   
+//	   
    });
    
    
