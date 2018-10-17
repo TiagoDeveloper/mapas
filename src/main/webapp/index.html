@@ -2,8 +2,11 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>Rotas</title>
+<title>Format WKT</title>
+
 <link href="ol.css" rel="stylesheet"/>
+<link href="css/bootstrap.min.css" rel="stylesheet"/>
+<link href="css/jquery-ui.min.css" rel="stylesheet"/>
 <style type="text/css">
 	#map {
 	  height: 100%;
@@ -13,106 +16,154 @@
 	  margin: 0;
 	  padding: 0;
 	}
-
 </style>
 
 </head>
 <body>
 
-<div id="map"></div>
+<div id="map" ></div>
+
+
+<div id="dialog-confirm" title="Empty the recycle bin?">
+<!--   <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p> -->
+</div>
 
 <script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="ol.js"></script>
+<!-- <script type="text/javascript" src="styles-geometry.js"></script> -->
+<script type="text/javascript" src="js/jsts.min.js"></script>
 <script type="text/javascript">
+var dialog;
 
-// function initMap(){
-// 		var map = new google.maps.Map(document.getElementById('map'), {
-// 		  center: {lat: -19.774390, lng: -43.983561},
-// 		  zoom: 18
-// 		});
-// 		$.ajax({
-// 			url : 'http://localhost:8080/geoserver/Rotas/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=Rotas:mytable&maxFeatures=50&outputFormat=application%2Fjson',
-// 			method : 'GET'
-// 		}).done(function(data){
-// 			console.log(data);
-// 		});
-// }
-
-// var raster = new ol.source.OSM();
-
-// var map = new ol.Map({
-//     target: 'map',
-//     layers: [
-//       new ol.layer.Tile({
-//         source: new ol.source.OSM()
-//       })
-//     ],
-//     view: new ol.View({
-//       center: ol.proj.fromLonLat([37.41, 8.82]),
-//       zoom: 4
-//     })
-//   });
-  
-//  import Map from 'ol/Map.js';
-//  import View from 'ol/View.js';
-//  import Draw from 'ol/interaction/Draw.js';
-//  import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
-//  import {OSM, Vector as VectorSource} from 'ol/source.js';
-      
-	var TileLayer = ol.layer.Tile;
-	var OSM = ol.source.OSM;
-	var VectorSource = ol.source.Vector;
-	var VectorLayer = ol.layer.Vector;
-	var View = ol.View;
-	var Map = ol.Map;
-	var Draw = ol.interaction.Draw;
-
-      var raster = new TileLayer({
-        source: new OSM()
-      });
-
-      var source = new VectorSource({wrapX: false});
-
-      var vector = new VectorLayer({
-        source: source
-      });
+$(document).ready(function(){
 	
-      var centerProjection = {lat: -19.774390, lng: -43.983561};
-      
-      var map = new Map({
-        layers: [raster, vector],
-        target: 'map',
-        view: new View({
-          center: ol.proj.fromLonLat([centerProjection.lng, centerProjection.lat]),
-          zoom: 18
+	dialog = $( "#dialog-confirm" ).dialog({
+	      autoOpen: false,
+		  resizable: false,
+	      height: "auto",
+	      width: 400,
+	      modal: true,
+	      buttons: {
+	        "Delete all items": function() {
+	          $( this ).dialog( "close" );
+	        },
+	        Cancel: function() {
+	          $( this ).dialog( "close" );
+	        }
+	      }
+	    });
+});
+
+$('#map').click(function(evt){
+	
+// 	var py = evt.offsetY;
+// 	var px = evt.offsetX;
+// 	$('#dialog-confirm').text(`pont y ${py} pont x ${px}`);
+// 	dialog.dialog( "open" );
+});
+
+
+var Map = ol.Map;
+var View = ol.View;
+var WKT = ol.format.WKT;
+var TileLayer = ol.layer.Tile;
+var VectorLayer = ol.layer.Vector;
+var OSM = ol.source.OSM;
+var VectorSource = ol.source.Vector;
+var Circle = ol.geom.Circle;
+var Feature = ol.Feature;
+var defaultControls = ol.control.defaults;
+var GeoJSON = ol.format.GeoJSON;
+var Draw = ol.interaction.Draw;
+
+var source = new VectorSource({wrapX: false});
+var vector = new VectorLayer({
+    source: source
+  });
+  var layers = [
+      new TileLayer({
+        source: new OSM()
+      }),
+      new ol.layer.Image({
+//         extent: ol.proj.fromLonLat([-43.9371022582054,-19.9319933968798,-43.9364343881607,-19.9312545841948]),
+        source: new ol.source.ImageWMS({
+          url: 'http://localhost:8080/geoserver/Rotas/wms',
+          params: {'LAYERS': 'Rotas:rota'},
+          ratio: 1,
+          serverType: 'geoserver'
         })
-      });
+      }),
+      vector
+   ];
+  
+   var map = new Map({
+     layers: layers,
+     target: 'map',
+     view: new View({
+       center:ol.proj.fromLonLat([-43.93710226,-19.93125458]),
+       zoom: 18
+     })
+   });
 
-      var typeSelect = 'Point';
+   
+//    	var typeSelect = 'Point';
+   	var typeSelect = 'LineString';
+	var draw = new Draw({
+	 source: source,
+	 type: typeSelect
+	});
+	function addInterection(){
+	 map.addInteraction(draw);
+	}
+	draw.on('drawend', function(event) {
+		
+		let format = new WKT();
+		
+		$.ajax({
+ 		   url: '/mapas/app/geometry',
+ 		   method: 'POST',
+ 		   data: {geometry: format.writeGeometry(event.feature.getGeometry())}
+ 	   }).done(function(result){
+ 		   console.log(result);
+ 	   });
+		//event.feature.getGeometry().setCoordinates(-4891034.949565495, -2264913.0496716015)
+	});
+//http://dafyddprys.github.io/2016/02/10/select-features-in-openLayers-using-polygon-draw.html
+   map.on('singleclick',function(evt){
+	console.log(evt);
+// 	   var formData = new FormData();
+// 	   var point = new ol.geom.Point(ol.proj.fromLonLat(evt.coordinate));
+// 	   formData.append('geometry', evt.coordinate.toString());
+//	   
+// 	   fetch('/mapas/app/geometry',{method:'POST',headers: {
+// 		   'Accept': 'application/json',
+// 		   'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+// 		   'body':JSON.stringify({geometry:evt.coordinate})
+// 	   })
+// 	   .then(function(evt){
+// 		   console.log("Result: " + evt);
+// 	   });
+// 	   $.ajax({
+// 		   url: '/mapas/app/geometry',
+// 		   method: 'POST',
+// 		   data: {geometry:evt.coordinate.toString()}
+// 	   }).done(function(result){
+// 		   console.log(result);
+// 	   });
+//	   
+//	   
+   });
+   
+   
+   
+   typeSelect.onchange = function() {
+       map.removeInteraction(draw);
+       addInteraction();
+     };
 
-      var draw; // global so we can remove it later
-      function addInteraction() {
-        var value = typeSelect;
-        if (value !== 'None') {
-          draw = new Draw({
-            source: source,
-            type: typeSelect
-          });
-          map.addInteraction(draw);
-        }
-      }
-
-
-      /**
-       * Handle change event.
-       */
-//       typeSelect.onchange = function() {
-//         map.removeInteraction(draw);
-//         addInteraction();
-//       };
-
-      addInteraction();  
+   addInterection();
 </script>
-<!-- <script src="https://maps.googleapis.com/maps/api/js?key=[api-key]&callback=initMap" async defer></script> -->
 </body>
 </html>

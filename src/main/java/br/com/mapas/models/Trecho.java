@@ -35,6 +35,10 @@ public class Trecho {
 		this.nome = nome;
 		this.setLineString(lineString);
 	}
+	public Trecho(String lineString) {
+		super();
+		this.setLineString(lineString);
+	}
 	public Long getId() {
 		return id;
 	}
