@@ -56,7 +56,7 @@ public class JdbcConfiguration {
 	public Properties additionalProperties() {
 		Properties properties = new Properties();
 		properties.setProperty("hibernate.hbm2ddl.auto", "update");
-		properties.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.postgis.PostgisDialect");
+		properties.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect");
 //		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
 		return properties;
